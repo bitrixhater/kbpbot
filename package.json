@@ -16,6 +16,6 @@
     "mongoose": "^4.7.5",
     "progress": "^1.1.8",
     "request": "^2.79.0",
-    "telegram-node-bot": "git://github.com/liveleak/telegram-node-bot.git#crutches"
+    "telegram-node-bot": "git://github.com/bitrixhater/telegram-node-bot.git#crutches"
   }
 }
