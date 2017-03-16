@@ -6,6 +6,7 @@ const TextCommand = Telegram.TextCommand
 const MongooseStorage = require('./MongooseStorage.js')
 const fs = require('fs')
 const fast = require('fast.js')
+const cron = require('node-cron')
 
 const tg = new Telegram.Telegram(require('./token').token, {
         webAdmin: {
@@ -20,7 +21,7 @@ tg.onMaster(() => {
   mongoose.connect('mongodb://localhost/kbpbot', {})
 })
 
-class ScheludeController extends TelegramBaseController {
+class ScheduleController extends TelegramBaseController {
 
     static capsFirst(str) {
         return str.charAt(0).toUpperCase() + str.slice(1)
@@ -35,7 +36,7 @@ class ScheludeController extends TelegramBaseController {
 
         config = config || {}
 
-        var loadSchelude = () => {
+        var loadSchedule = () => {
             return new Promise((resolve, reject) => {
                 fs.readFile('./timetable.json', 'utf8', (err, data) => {
                     if (err) return reject(err)
@@ -43,7 +44,7 @@ class ScheludeController extends TelegramBaseController {
                 })
             })
             .then((data) => {
-                this.schelude = JSON.parse(data)
+                this.schedule = JSON.parse(data)
                 console.log('Timetable reloaded in ' + process.pid)
             })
             .catch((err) => {
@@ -52,11 +53,9 @@ class ScheludeController extends TelegramBaseController {
             })
         }
 
-        loadSchelude()
+        loadSchedule()
 
-        setInterval(() => {
-            loadSchelude()
-        }, 14 * 60 * 60 * 1000)
+        cron.schedule('30 11 * * *', loadSchedule)
 
         this.days = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ']
         this.decDays = ['воскресенье', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу']
@@ -81,13 +80,13 @@ class ScheludeController extends TelegramBaseController {
             let layout = [2, 2, 3]
 
             if (pinnedItem 
-                && this.schelude[pinnedItem.category]
-                && this.schelude[pinnedItem.category][pinnedItem.item]) {
+                && this.schedule[pinnedItem.category]
+                && this.schedule[pinnedItem.category][pinnedItem.item]) {
                 layout = [1, 2, 2, 3]
                 let tempText = '📍 ' +
-                                ScheludeController.capsFirst(pinnedItem.category) +
+                                ScheduleController.capsFirst(pinnedItem.category) +
                                 ' - ' +
-                                ScheludeController.capsFirst(pinnedItem.item)
+                                ScheduleController.capsFirst(pinnedItem.item)
                 menuButtons[tempText] = (choose$) => {
                     this.chooseDayInItem(choose$, pinnedItem.category, pinnedItem.item)
                 }
@@ -136,8 +135,8 @@ class ScheludeController extends TelegramBaseController {
             .catch(console.log)
         }
 
-        fast.forEach(Object.keys(this.schelude[category]), (item, ind) => {
-            menuButtons[ScheludeController.capsFirst(item)] = (choose$) => {
+        fast.forEach(Object.keys(this.schedule[category]), (item, ind) => {
+            menuButtons[ScheduleController.capsFirst(item)] = (choose$) => {
                 this.chooseDayInItem(choose$, category, item)
             }
         })
@@ -168,7 +167,7 @@ class ScheludeController extends TelegramBaseController {
 
         let currentDay = (new Date()).getDay()
 
-        fast.forEach(Object.keys(this.schelude[category][item]), (day, ind) => {
+        fast.forEach(Object.keys(this.schedule[category][item]), (day, ind) => {
             day = parseInt(day)
             let caption = (currentDay === day) ? '>' + this.days[day] + '<' : this.days[day]
             menuButtons[caption] = (choose$) => {
@@ -193,8 +192,8 @@ class ScheludeController extends TelegramBaseController {
 
         let lessons = ''
 
-        fast.forEach(Object.keys(this.schelude[category][item][day]), (lessonNo, ind) => {
-            let lesson = this.schelude[category][item][day][lessonNo]
+        fast.forEach(Object.keys(this.schedule[category][item][day]), (lessonNo, ind) => {
+            let lesson = this.schedule[category][item][day][lessonNo]
             lesson.subject = lesson.subject.trim()
             lesson.group = lesson.group.trim()
             lesson.classroom = lesson.classroom.trim()
@@ -229,8 +228,8 @@ class ScheludeController extends TelegramBaseController {
             }
         }
 
-        fast.forEach(Object.keys(this.schelude[category]), (item, ind) => {
-            menuButtons[ScheludeController.capsFirst(item)] = (choose$) => {
+        fast.forEach(Object.keys(this.schedule[category]), (item, ind) => {
+            menuButtons[ScheduleController.capsFirst(item)] = (choose$) => {
 
             if ($.idFromGroupChat)
                 choose$.setChatSession('pinnedItem', {
@@ -342,13 +341,13 @@ class ScheludeController extends TelegramBaseController {
             }
 
             if (pinnedItem 
-                && this.schelude[pinnedItem.category]
-                && this.schelude[pinnedItem.category][pinnedItem.item]) {
+                && this.schedule[pinnedItem.category]
+                && this.schedule[pinnedItem.category][pinnedItem.item]) {
 
                 tempText = '📍 Закреплено: ' +
-                            ScheludeController.capsFirst(pinnedItem.category) +
+                            ScheduleController.capsFirst(pinnedItem.category) +
                             ' - ' +
-                            ScheludeController.capsFirst(pinnedItem.item)
+                            ScheduleController.capsFirst(pinnedItem.item)
 
                 menuButtons[tempText] = pinItemMenu
             } else {
@@ -357,9 +356,9 @@ class ScheludeController extends TelegramBaseController {
 
             if (sendingTime) {
                 tempText = '🔔 Уведомления в ' + 
-                            ScheludeController.toStringNumber(sendingTime.hour) + 
+                            ScheduleController.toStringNumber(sendingTime.hour) + 
                             ':' + 
-                            ScheludeController.toStringNumber(sendingTime.minute) + 
+                            ScheduleController.toStringNumber(sendingTime.minute) + 
                             '. Отключить?'
                 menuButtons[tempText] = (choose$) => {
                     this.disableNotifications(choose$)
@@ -494,9 +493,9 @@ class StopController extends TelegramBaseController {
 
 const pingController = new PingController()
 const stopController = new StopController()
-const scheludeController = new ScheludeController()
+const scheduleController = new ScheduleController()
 
 tg.router
     .when(new TextCommand('ping'), pingController)
     .when(new TextCommand('stop'), stopController)
-    .otherwise(scheludeController)
+    .otherwise(scheduleController)

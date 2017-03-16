@@ -3,15 +3,16 @@ const Cheerio = require('cheerio'),
       ProgressBar = require('progress'),
       Fs = require('fs'),
       Util = require('util')
+      cron = require('node-cron')
 
 // const mongoose = require('mongoose')
 // const Schema = mongoose.Schema
-// const Schelude = mongoose.model('Schelude', new Schema({
+// const Schedule = mongoose.model('Schedule', new Schema({
 //   name: String,
 //   type: String,
 //   url: String,
 //   updated: String,
-//   schelude: Types.Mixed,
+//   schedule: Types.Mixed,
 // }))
 
 // mongoose.connect('mongodb://localhost/kbpbot', {})
@@ -19,7 +20,7 @@ const Cheerio = require('cheerio'),
 let output = 'timetable.json',
     callback = () => {
       console.log('----------------')
-      console.log('Schelude updated at ' + (new Date()).toString() + ' into the \'' + output + '\'')
+      console.log('Schedule updated at ' + (new Date()).toString() + ' into the \'' + output + '\'')
       console.log('----------------')
       console.log('waiting...')
     }
@@ -27,22 +28,22 @@ let output = 'timetable.json',
 class KbpParser {
 
   // exportToMongo() {
-  //   return this._parseFullSchelude()
+  //   return this._parseFullSchedule()
   //   .then((types) => {
   //     let pool = new Promise(resolve => (1))
   //     Object.keys(types).forEach(t => {
   //       let type = t
   //       Object.keys(types[type]).forEach(s => {
-  //         let schelude = s
+  //         let schedule = s
   //         pool = pool
   //         .then(() => new Promise((resolve, reject) => {
-  //           Schelude.findOne({ 'name': schelude, 'type': type }, 'name type', function (err, finded) {
+  //           Schedule.findOne({ 'name': schedule, 'type': type }, 'name type', function (err, finded) {
   //             if (err) {
   //               reject(err)
   //               return
   //             }
   //             finded.updated = Date.now()
-  //             finded.schelude = schelude
+  //             finded.schedule = schedule
   //             resolve(finded.save())
   //           })
   //         }))
@@ -52,7 +53,7 @@ class KbpParser {
   //   })
   // }
 
-  _parseFullSchelude() {
+  _parseFullSchedule() {
     return this._parseStuff('http://kbp.by/rasp/timetable/view_beta_tbp/?q=')
       .then((result) => {
         let list = result
@@ -69,7 +70,7 @@ class KbpParser {
               list[type_key][sch_key] = //{
                 //url: url,
                 //updated: Date.now(),
-                /* schelude: */result
+                /* schedule: */result
               //}
             })
             .catch(error => console.log('pool error: '+url)/*throw new Error(error)*/)
@@ -91,10 +92,10 @@ class KbpParser {
   }
   
   exportTimetable(file, callback) { // refactor
-    console.log('idk why its still alive, rly')
-    return this._parseFullSchelude()
+    // console.log('idk why its still alive, rly')
+    return this._parseFullSchedule()
     .then(list => {
-      console.log(list)
+      // console.log(list)
       if (file) 
         this._saveJSON(file, list)
         .then(() => list)
@@ -208,4 +209,6 @@ try {
 
 console.log('waiting...')
 
-//setInterval(kbp.exportTimetable, 12 * 60 * 60 * 1000, output, callback)
+cron.schedule('15 11 * * *', function () {
+  kbp.exportTimetable(output, callback)
+})
