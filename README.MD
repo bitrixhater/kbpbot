@@ -3,8 +3,12 @@
 А потом просто бахнуть вот это вот:
 ```
   npm install
-  node downloader && node bot
+  node downloader
+  // подождать пока скачается и бахнуть ctrl+c
+  screen -dmSL kbpbot node bot -L
+  screen -dmSL kbpbot node downloader -L
 ```
+(демон для лохов, скрин - выбор мастеров)
 Чтобы обновить расписание
 ```
   node downloader
