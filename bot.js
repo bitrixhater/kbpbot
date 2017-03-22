@@ -40,10 +40,14 @@ if (cluster.isMaster) {
   .use('SenderServices', {
     model: mongooseStorage.model
   })
-  .listen()
+  .listen({
+    port: 10102
+  })
 } else if (cluster.isWorker) {
   seneca
-  .client()
+  .client({
+    port: 10102
+  })
 }
 
 // TODO add middlewares
