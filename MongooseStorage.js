@@ -30,7 +30,7 @@ class MongooseStorage extends BaseStorage {
     options = options || {}
     let modelName = options.modelName || 'chats'
 
-    this.BotStorage = mongoose.model(modelName, this.constructor.BotStorageSchema)
+    this.model = mongoose.model(modelName, this.constructor.BotStorageSchema)
   }
 
   /**
@@ -55,7 +55,7 @@ class MongooseStorage extends BaseStorage {
    */
   get(storage, key) { 
     let params = this._formatKey(storage, key)
-    return this.BotStorage.findOne({
+    return this.model.findOne({
       chatId: params.chatId,
       type: params.type,
       'keys.name': params.key
@@ -77,14 +77,14 @@ class MongooseStorage extends BaseStorage {
    */
   set(storage, key, data) {
     let params = this._formatKey(storage, key)
-    return this.BotStorage.findOne({
+    return this.model.findOne({
       chatId: params.chatId,
       type: params.type
     })
     .exec()
     .then(chat => {
       if (!chat)
-        chat = new this.BotStorage({
+        chat = new this.model({
           chatId: params.chatId,
           type: params.type,
           keys: []
@@ -115,7 +115,7 @@ class MongooseStorage extends BaseStorage {
    */
   remove(storage, key) { 
     let params = this._formatKey(storage, key)
-    return this.BotStorage.findOne({
+    return this.model.findOne({
       chatId: params.chatId,
       type: params.type
     })
