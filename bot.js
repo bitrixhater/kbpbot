@@ -288,14 +288,32 @@ class ScheduleController extends TelegramBaseController {
 
       fast.forEach(items, (item, ind) => {
         menuButtons[this.constructor.capsFirst(item)] = (choose$) => {
-          choose$.setUserSession('pinnedItem', {
+          let pinnedItem = {
             category: category,
             item: item
-          })
+          }
+          choose$.setUserSession('pinnedItem', pinnedItem)
           .then(() => {
+
+            $.getUserSession('sendingTime')
+            .then(sendingTime => {
+              if (!sendingTime)
+                return $.sendMessage('Можете включить уведомления и Вам будет приходить выбранное расписание каждый учебный день. Никакой рекламы!')
+
+              seneca.act({
+                role:'sender',
+                cmd:'subscribe',
+                type:'schedule',
+                chatId: $.chatId,
+                sendingTime: sendingTime,
+                pinnedItem: pinnedItem
+              })
+
+              return
+            })
+
             choose$.sendMessage('Расписание закреплено!')
-            .then(() => this.chooseSetting(choose$))
-            .catch(console.log)
+            this.chooseSetting(choose$)
           })
         }
       })
@@ -315,6 +333,12 @@ class ScheduleController extends TelegramBaseController {
   }
 
   unpinItem($) {
+    seneca.act({
+      role:'sender',
+      cmd:'unscribe',
+      type:'schedule',
+      chatId: $.chatId
+    })
     $.setUserSession('pinnedItem', null)
     .then(() => {
       $.sendMessage('Расписание откреплено!')

@@ -60,21 +60,23 @@ module.exports = function math(options) {
       '\n------------'
     )
 
-    if (!scheduleSenders[msg.chatId]) {
-      scheduleSenders[msg.chatId] = cron.schedule(
-        msg.sendingTime.minute + ' ' + msg.sendingTime.hour + ' * * *', 
-        () => {
-          this.act({
-            role: 'sender',
-            cmd: 'send',
-            type: 'schedule',
-            chatId: msg.chatId,
-            category: msg.pinnedItem.category,
-            item: msg.pinnedItem.item
-          })
-        }
-      )
-    }
+    if (scheduleSenders[msg.chatId]
+      && typeof scheduleSenders[msg.chatId].stop == 'function')
+      scheduleSenders[msg.chatId].stop()
+
+    scheduleSenders[msg.chatId] = cron.schedule(
+      msg.sendingTime.minute + ' ' + msg.sendingTime.hour + ' * * *', 
+      () => {
+        this.act({
+          role: 'sender',
+          cmd: 'send',
+          type: 'schedule',
+          chatId: msg.chatId,
+          category: msg.pinnedItem.category,
+          item: msg.pinnedItem.item
+        })
+      }
+    )
 
     respond(null, {ok: true})
   })
