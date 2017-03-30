@@ -25,6 +25,7 @@ const tg = new Telegram.Telegram(require('./token').token, {
 
 if (cluster.isMaster) {
   mongoose.connect('mongodb://localhost/kbpbot')
+  let tgApiChain = Promise.resolve(1)
   seneca
   .add('role:tg,cmd:api', function api (msg, respond) {
     tgApiChain = tgApiChain.then(() => {
