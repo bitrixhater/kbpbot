@@ -27,13 +27,18 @@ if (cluster.isMaster) {
   mongoose.connect('mongodb://localhost/kbpbot')
   seneca
   .add('role:tg,cmd:api', function api (msg, respond) {
-    tg.api[msg.method].apply(tg.api, msg.args)
-    .then(response => {
-      console.info('--------\nNOTIFY SENDED TO:\n' + JSON.stringify(response.chat) + '\n--------')
-      return respond(null, {
-        response: response
+    tgApiChain = tgApiChain.then(() => {
+      tg.api[msg.method].apply(tg.api, msg.args)
+      .then(response => {
+        console.info('--------\nAPI METHOD ' + msg.method + ' CALLED WITH ARGS ' + JSON.stringify(msg.args) + ':\n' + JSON.stringify(response.chat) + '\n--------')
+        return respond(null, {
+          response: response
+        })
       })
     })
+    .then(() => new Promise(resolve => {
+      setTimeout(resolve, 2000)
+    }))
     .catch(respond)
   })
   .use('ScheduleServices')
