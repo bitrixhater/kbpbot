@@ -24,8 +24,6 @@
 
 # Скриншоты
 
-![image](https://user-images.githubusercontent.com/2446589/64079453-5dd57b80-ccf0-11e9-8010-5ead292dbcb8.png)
-
-![image](https://user-images.githubusercontent.com/2446589/64079454-629a2f80-ccf0-11e9-9098-b805a6657435.png)
-
-![image](https://user-images.githubusercontent.com/2446589/64079456-66c64d00-ccf0-11e9-86a1-a525274a84a6.png)
+| Главная страница | Пары по дням |
+| --- | --- |
+| ![image](https://user-images.githubusercontent.com/2446589/64079453-5dd57b80-ccf0-11e9-8010-5ead292dbcb8.png) | ![image](https://user-images.githubusercontent.com/2446589/64079456-66c64d00-ccf0-11e9-86a1-a525274a84a6.png) |
